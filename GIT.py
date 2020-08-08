@@ -193,11 +193,18 @@ hicimos un commit en la master, pero queriamos hacerlo en la branch ramma_nueva.
 
 ============================ TAGs ======================================================================================
 
-	git tag version 1.0			creo una etiqueta
-	git tag						muestro el nombre de la etiqueta actual
-	git tag -d version 1.0		borro etiqueta
+	git tag version 1.0			creo una etiqueta simple
+	git tag -a v1.0 -m "version mejorada"		son etiquetas anotadas, me da opcion de ver un texto asociado
+	
+	git tag						muestro el nombre de las etiquetas dell proyecto
+	git show <tag>				muestra el commit asociado a la etiqueta si es una simple
+								muestra commit y descripcion de la etiqueta si es una de tipo anotadas
 
-	git tag -a v1.0 -m "version mejorada"		me da mas opcion para escribir detalles
+	git tag -d version 1.0		borro etiqueta, creo que la mueve a otra rama, no se
+
+las etiquetas no se suben al remoto, salvo que lo hagas de forma manual:
+	git push origin <tag>		si es una etiqueta especifica
+	git push origin --tags 		si son todas las etiquetas dell proyecto
 
 si quiero poner una etiqueta a un commit anterior, hago un log, copio el hash
 	git tag -a v0.1 <hash_commit> -m "version inicia" 
