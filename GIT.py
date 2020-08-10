@@ -49,7 +49,7 @@ tenemos nuestro codigo e inicimos su seguimiento en la carpeta del proyecto. Cre
 	git log -p -2			(-p muestra las diff, y el -2 muestra silo los 2 ultimos commits)
 	git log --stat 			(muestra total de lineas eliminadas y agregadas)
 	git log --graph			(muestra dibujo de ramas y merges)
-	
+	git log --oneline --all --graph --decorate
 
 	git show <commit> (mustra datos dell commit) 
 
@@ -73,123 +73,125 @@ tenemos nuestro codigo e inicimos su seguimiento en la carpeta del proyecto. Cre
 	git commit -m "Primer commit"	(no paso por vim)
 	git commit -a -m "Primer commit"	(evita hacer el add de los archivos, lo hace con -a)								
 
-	git log (para ver el listado de commits)
+	git remote -v 		(me muestra los remotos que tengo asociados con el repo)
+	git remote show origin	(ademas muestra las ramas asociadas a cada rama remota)
+	git remote add pablo <url>		(le asigno a mi remoto un nombre, luego puedo hacer git pull pablo master)
+	gir remote rm <url>				(borro una direccion de remoto asociada)
 
 ============================  BRANCHES  =================================================================================
 
 	git branch rama_nueva 			(creo una rama paralela a master)
 	git checkout rama_nueva 		(cambio a rama_nueva, cambio mi working directory a la rama_nueva)
 
-	git checkout -b rama_nueva 		(idem reemplaza las 2 lineas anteriores)
+	git checkout -b rama_nueva 		(idem reemplaza los 2 comandos anteriores)
 
-	git branch 						(me muestra todas las branch existentes en el repositorio)
-	git branch -a 					(me lista todas las branch tanto locales, como remotas)
+	git branch 						(me muestra todas las branch existentes en el repositorio local)
+	git branch -a 					(me lista todas las branch tanto locales, como las ocultas para las remotas)
 
 	git branch -d rama2 			(borro la rama2)
 
 si quiero ver las diferencias entre rama_nueva y master
-	git diff rama_nueva 		creo que tengo que pasarme a la rama master ??
+	git diff rama_nueva 		tengo que estar parado en rama master
 
 ahora le voy a agregar la branch nueva a mi repositorio remoto
-	git push origin rama_nueva
+	git remote			me fijo el nombre asignado al repo remoto
+	git push <origin> <rama_nueva>		puede ocurrir un error, tal vez alguien ya hizo cambios en la rama remota, pro
+										lo que no tienes actualizada la ultima version de la rama. Tienes que hacerle un
+										fetch, evaluar, hacer un merge, y luego subirla
 
-si ahora quiero unir mi rama_nueva a mi master:
+si ahora quiero unir mi rama_nueva a mi master, y luego subirla al remoto:
+la rama_nueva ya esta commiteada y lista para el merge.	
 	git checkout master 		vuelvo a posicionarme en el master
 	git pull origin master 		para descargar la ultima version del master
-	git merge rama_nueva 		unimos la rama_nueva a la master
-	git push origin master		para subir el merge al remoto
+	git merge rama_nueva 		unimos la rama_nueva a la master, resolviendo conflictos
+	git push origin	master		para subir el merge al remoto
 
-por error hice un commit a la rama principal
-	git branch rama_pruebas							(creo una nueva branch)
-	git reset HEAD~ --hard 							(elimino commit, actualizo stagin y working)
-	git checkout rama_pruebas						(cambio a la branch nueva)
-	git commit -m "ahora estoy en la rama_pruebas"	
+queremos copiar un commit de la master para ponerlo en la branch ramma_nueva:
+	git checkout rama_nueva 				nos pasamos a la rama que no tenia el commit, al que lo queremos poner
+	git cherry-pick <hash_del_commit> 		copiamos el commit de master a rama_nueva
+	
+por error hice un commit a la rama principal y tenia que empezar a trabajar en mi rama_pruebas:
+	git reset --hard HEAD~1 							elimino commit, actualizo stagin y working
+	git checkout rama_pruebas							paso a la rama_pruebas
+	git commit -m "ahora estoy en la rama_pruebas"		creo el commit
 
 cambiar el nombre del branch creado anteriormente
 	git branch -m rama_pruebas rama_otro_nombre
 
-borrar el nombre de una rama que ya se envio al remoto
+borrar el nombre de una rama que se esta enviando al remoto
 	git push origin --delete rama_pruebas
 
-si hay conflicto, tengo que establecer la union de forma manual, en el editor de texto.
+hago el merge, pero hay conflictos, tengo que establecer la union de forma manual, en el editor de texto.
 borro los comentarios y luego elijo que codigo es el que queda. luego cuando ya tengo resuelto el codigo, 
-hago un add y un commit, y ya resolvi el merge en forma manual, puedo hacer merge, pero me va a decir que no es 
-necesario porque ya grabe los cambios manualmente, asi que puedo borrar la rama
+hago un add y un commit dell merge. Lo resolvi de forma manual.
 
 	git push origin delete rama_nueva 		borro la branch en el repo remoto
 
-	git branch -d rama_nueva 				si quiero borrarlo de mi repositorio local
+si en el remoto tenia ramas que se fueron borrando, en el local, sigo viendo esas ramas remotas borradas, solucion:
+	git remote update origin
+	git branch -a				muestra todas las branch, hasta las ocultas para fetch
+
+quiero traer una rama_1 dell remoto y ponerla en una rama_prueba en mi local:
+	git checkout -b rama_prueba origin/rama_1
+
+PULL vs FETCH :
+	git fetch origin			esto me trae solo los cambios de remoto, pero no los aplica a mi working tree
+								en el mensaje de fetch, te dice las ramas "ocultas" en donde guarda lo que trajo.
+										master -> origin/master
+										rama_1 -> origin/rama_1
+								luego puedes ir a la rama que quieras y hacer una   git diff origin/master 
+								y puedes hacer merge por rama o no. Decido que hacer con la info del remoto
+								Fetch me trae los cambios de las ramas del remoto tambien.
+
+	git pull origin				me trae lo del remoto, y me actualiza mi woring tree, borra todo lo que tenia
+								Pull me trae solo la rama en la que estoy parado, no se nada de las demas ramas.
 
 ============================ MODIFICAR y BORRAR ARCHIVOS =================================================================
 
-modificamos codigo, esta en el woking directory pero queremos volver a la version del repositorio nuevamente
-	git checkout <file> 		el git status me lo mostraba en rojo y luego del checkout desaparece
-	git checkout . 				para todos los archivos.
+volvemos el archivo a como estaba en el commit especificado:
+	git checkout <file> 			sino especifico commit, me manda el ultimo commit
+	git checkout . 					idem para todos los archivos, en el ultimo commit.
+	git checkout 55df4c2 <file>		me muestra el archivo en determinado commit
+	git checkout 55df4c2			idem para todos los archivos, en dereminado commit
 
 queremos sacar algo que tenemos en el stagin
 	git reset <file> 		me lo saca del stagin y me lo deja en rojo
-	git reset 				me saca todo lo del stagin?
+	git reset .				me saca todo lo del stagin
 
-modificando archivos que ya estaba en un commit
-primero modificamos y mandamos el archivo al stagin,
-	git add <file> 			agregamos al stagin area
-	git commit --amend 		abre Vim, y ahi podemos modificar el texto de commit, y va a commitear lo que esta en el stagin
-							se sobre-escribe el commit y se cambia el hash
+modificando archivos que ya estaba en un commit. Primero modificamos y mandamos el archivo al stagin,
+	git add <file> 								agregamos al stagin area
+	git commit --amend -m "Texto modificado"	modificamos solo el texto dell commit, y agrega archivos dell stagin
+
 	git log --stat 			muestra los archivos que fueron modificados en cada commit
 
-git mv <file> <file_renamed> (cuando quiero cambiar el nombre de un archivo ya en el repositorio y quiero
-							  dejar en el commit que cambio el nombre. y luego hacer un git commit)
+quiero cambiar el nombre de un archivo dell repo, dejando asentado el cambio con un commit
+	git mv <file> <file_renamed> 	
+	git commit -m "Cambie el nombre del archivo"
 
-git rm <file> 			(borra el archivo dell repositorio, y lo manda al stagin)
-git rm --cached <file> 	(borra el archivo de control de versiones, pero lo conserva en el local)
+sacar un archivo dell repo, hacido 1 commits:
+	git rm <file> 				borra el archivo por completo, manda al stagin el mensaje de borrado, para luego commitear
+	git rm --cached <file> 		saca el archivo dell repo, pero lo conserva en la carpeta local, como .gitignore
 
-sacar un archivo luego de que hice el commit
-	git reset --soft HEAD~1
-	git reset <file>
-	rm <file>
-	git commit -m "ya saque el archivo"
-
-volver un archivo al working, de un commit anterior
-	git checkout HEAD <file>  
-	git checkout -- <file>
-luego agregar con add y hacer un commit para que se guarden los cambios
-
-	git rm texto.txt 	eliminas el archivo del proximo commit, cuando hagas el nuevo commit, 
-						desaparecera de tu working
-	git rm --cached texto.txt 	te lo deja en el working pero no lo rastrea mas. 
-								Es como incluirlo en el .gitignore
-	git mv texto.txt te.txt 	renombrar archivo								
+sacar un archivo luego del ultimo commit
+	git reset --soft HEAD~1					vuelvo al anteultimo commit 
+	git rm -f <file>						fuerzo el borrado de <file>
+	git commit -m "ya saque el archivo"		
 
 ============================ MOVERSE ENTRE COMMITS o BORRAR ================================================================
 
 https://git-scm.com/book/es/v2/Herramientas-de-Git-Reiniciar-Desmitificado							
 
-modificamos solo el texto dell commit:
-	git commit --amend -m "Texto modificado"
-
 deshace todos los cambios despues dell commit especificado
-	git reset <hash_commit>
 
 	git reset HEAD~1 					me borra solo el ultimo commit, y vuelve al ante-ultimo
-	git reset HEAD@{dfa27a2} 			me lleva hasta el commit del hash
+	git reset HEAD@{dfa27a2} 			??
 
-	git reset --soft a458de44765ef 		borra el commit, actualiza head, no actualiza stagin, no actualiza working
-	git reset a458de44765ef   			borra el commit, actualiza head, si actualiza stagin, no actualiza working
-	git reset --hard a458de44765ef 		borra el commit, actualiza head, si actualiza stagin, si actualiza working
+										working		stagin		
+	git reset --soft a458de44765ef 		    X		  X	            
+	git reset a458de44765ef   				X		  SI
+	git reset --hard a458de44765ef 		    SI        SI
 
-	git reflog 			un log mas completo, muestra los amend, reset, etc						nos muestra los commits, los amend, y los movimientos entre ramas
-
-volver el archivo a cualquier commit especifico
-	git log --oneline				listamos los commits para ver su hash
-	git checkout 55df4c2 <file>		movemos al working como estaba ese archivo en ese commit
-
-si queremos llevar a todos los archivos al working, como estaban en un determinado commit:
-	git checkout 55df4c2
-
-hicimos un commit en la master, pero queriamos hacerlo en la branch ramma_nueva. Asi lo pasamos:
-	git checkout rama_nueva 				nos pasamos a la rama que no tenia el commit, al que lo queremos poner
-	git cherry-pick <hash_del_commit> 		copiamos el commit de master a rama_nueva
-	git checkout master 					nos pasamos a la master
+	git reflog 			un log mas completo, muestra los amend, movimiento en ramas, etc	
 
 ============================ TAGs ======================================================================================
 
@@ -233,9 +235,11 @@ en GitHub vamos a < > Code, boton verde Code, en el repo que queremos clonar, y 
 
 si ya lo teniamos en el working directory (.git) pero fue modificado en el remoto, traemos solo las modificaciones con 
 respecto al repositorio que tenemos en nuestra compu con:
-	git pull url
-	git pull origin master
-	git fetch url 				es como un pull, pero con este comando luego hay que hacer un merge a master
+	git pull url			un pull modifica tanto el repositorio como el working. Si estabas modificando codigo ya creado,
+	git pull origin master		es sobreescrito por lo que viene del pull.
+	git fetch origin 		es como un pull, pero coloca los archivos en una rama oculta llamada origin/master
+							por lo que luego hay que hacer un merge con master. Sirve si quiero tener mi repositorio
+							actualizado del remoto, pero no quiero tocar mi working o mi rama master
 
 una vez tengamos todos los cambios que necesitabamos, lo subimos al remoto con el comando:
 	git push origin master
@@ -252,6 +256,32 @@ dentro de GitHub, podemos ver los commits:
 el FORK es para copiar un repositorio de otra persona a mis proyectos, lo puedo corregir, o hasta generar un pull request
 para el autor. Es para tener una copia y poder modificarla a nuestro gusto
 
+============================== VS CODE - GIT - GITHUB ==================================================================
+
+subir codigo a github:
+1_ tener el codigo en el working, ya con un commit
+2_ crear el repositorio en github y copiar la url
+3_ en VS en ... poner push, y me pide la url dell repo en github y un nombre(no se para que)
+4_ en VS click en la nube con flechita (abajo izq), o en los ... poner push otra vez.
+5_ ya esta subido a github
+
+actualizar codigo de master a remoto:
+1_ hacemos el commit
+2_ abajo a la izq ponemos la flecha hacia arriba o en ... pull y listo
+
+actualizar codigo de remoto a master:
+1_ en los ... hacemos un pull
+
+clonar un remoto:
+1_ abrir una carpeta nueva, un proyecto nuevo. En la parte Source control (git), elegir clonar repositorio
+2_ o en Command Pallete, ponemos clone, ponemos url y elegimos carpeta para guardar el repo local
+
+extension Git Lens:
+en el codigo, me permite ver en cada linea, si esta en stage, el commit asociado, el autor, fecha, etc 
+en el sidebar, me muestra, los cambios de la linea, los commits asociados al archivo, puedo
+ver como estaba el archivo en cada commit, traerlo al area de trabajo, copiar el hash, ver los tags, ver los 
+remotos asociados, autores, ramas, push, pulls, etc
+
 ============================== FLUJO DE TRABAJO ============================================================================
 
 trabajamos en un poyecto en una empresa, y tenemos nuetro codigo en casa, para continuar trabajando con el grupo:
@@ -267,6 +297,8 @@ trabajamos en un poyecto en una empresa, y tenemos nuetro codigo en casa, para c
 
 ls = lista directorio actual
 ls -alh = lista directorio actual, hasta los ocultos
+
+touch <file_name>		crea un archivo vacio
 
 pwd = ver en que directorio estamos parados
 
